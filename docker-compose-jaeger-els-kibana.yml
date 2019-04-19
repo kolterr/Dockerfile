@@ -1,0 +1,55 @@
+version: '3'
+services:
+  jaeger:
+    image: jaegertracing/all-in-one:1.11
+    container_name: "jaeger_test"
+    restart: always
+    networks:
+      - elastic-jaeger
+    ports:
+      - "5775:5775/udp"
+      - "6831:6831/udp"
+      - "6832:6832/udp"
+      - "5778:5778"
+      - "16686:16686"
+      - "14268:14268"
+      - "9411:9411"
+    depends_on:
+      - elasticsearch
+      - kibana
+    environment:
+      - SPAN_STORAGE_TYPE=elasticsearch
+      - ES_SERVER_URLS=http://elasticsearch:9200
+  elasticsearch:
+    image: elasticsearch:6.7.1
+    container_name: elasticsearch
+    environment:
+      - bootstrap.memory_lock=true
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - cluster.name=jaeger-cluster
+      - xpack.security.enabled=false
+    restart: always
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ~/elasticsearch/data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - elastic-jaeger
+  kibana:
+    image: kibana:6.7.1
+    container_name: kibana-els
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - elastic-jaeger
+networks:
+  elastic-jaeger:
+    driver: bridge
