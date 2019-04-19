@@ -3,12 +3,14 @@ services:
   consul1:
     container_name: node1
     image: consul:1.4.4
+    restart: always
     command: agent -server -bootstrap-expect=3 -node=node1 -bind=0.0.0.0 -client=0.0.0.0 -datacenter=dc1
     networks:
       - consul-net
   consul2:
     image: consul:1.4.4
     container_name: node2
+    restart: always
     command: agent -server -retry-join=node1 -node=node2 -bind=0.0.0.0 -client=0.0.0.0 -datacenter=dc1
     depends_on:
       - consul1
@@ -17,6 +19,7 @@ services:
   consul3:
     image: consul:1.4.4
     container_name: node3
+    restart: always
     command: agent -server -retry-join=node1 -node=node3 -bind=0.0.0.0 -client=0.0.0.0 -datacenter=dc1
     depends_on:
       - consul1
@@ -25,6 +28,7 @@ services:
   consul4:
     image: consul:1.4.4
     container_name: node4
+    restart: always
     command: agent -retry-join=node1 -node=node4 -bind=0.0.0.0 -client=0.0.0.0 -datacenter=dc1 -ui
     ports:
       - 8500:8500
